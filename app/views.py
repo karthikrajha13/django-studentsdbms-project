@@ -2,6 +2,12 @@ from django.shortcuts import render, redirect
 from .models import Student
 from django.contrib import messages
 from .forms import StudentForm
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 
 def home(request):
     return render(request, "app/index.html")
@@ -12,6 +18,7 @@ def about(request):
 def contact(request):
     return render(request, "app/contact.html")
 
+@login_required
 def register(request):
 
     if request.method == "POST":
@@ -34,6 +41,7 @@ def register(request):
 
     return render(request, "app/register.html")
 
+@login_required
 def search(request):
 
     course = request.GET.get("course")
@@ -43,7 +51,8 @@ def search(request):
         "app/search.html",
         {"course": course}
     )
-    
+
+@login_required    
 def students(request):
 
     students = Student.objects.order_by("-id")
@@ -54,6 +63,7 @@ def students(request):
         {"students": students}
     )
 
+@login_required
 def edit(request, id):
 
     student = Student.objects.get(id=id)
@@ -76,7 +86,8 @@ def edit(request, id):
             "student": student
         }
     )
-    
+  
+@login_required    
 def delete(request, id):
 
     student = Student.objects.get(id=id)
@@ -106,7 +117,7 @@ def python_students(request):
             "students": students
         }
     )
-from django.http import HttpResponse
+
 
 def orm_demo(request):
 
@@ -119,9 +130,6 @@ def orm_demo(request):
     print("Last Student :", Student.objects.last())
 
     return HttpResponse("Check Terminal")
-
-from django.shortcuts import render, redirect
-from .forms import StudentForm
 
 def django_form(request):
 
@@ -139,3 +147,61 @@ def django_form(request):
     return render(request, "app/djangoform.html", {
         "form": form
     })
+    
+def signup(request):
+
+    if request.method == "POST":
+
+        username = request.POST["username"]
+        email = request.POST["email"]
+        password = request.POST["password"]
+
+        if User.objects.filter(username=username).exists():
+
+            messages.error(request, "Username already exists.")
+
+            return redirect("signup")
+
+        User.objects.create_user(
+            username=username,
+            email=email,
+            password=password
+        )
+
+        messages.success(request, "Account Created Successfully!")
+
+        return redirect("login")
+
+    return render(request, "app/signup.html")
+
+def login_user(request):
+
+    if request.method == "POST":
+
+        username = request.POST["username"]
+
+        password = request.POST["password"]
+
+        user = authenticate(
+            request,
+            username=username,
+            password=password
+        )
+
+        if user:
+
+            login(request, user)
+
+            return redirect("home")
+
+        else:
+
+            messages.error(request, "Invalid Username or Password")
+
+    return render(request, "app/login.html")
+
+def logout_user(request):
+
+    logout(request)
+
+    return redirect("login")

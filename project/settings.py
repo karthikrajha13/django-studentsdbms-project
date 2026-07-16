@@ -123,5 +123,5 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-
+LOGIN_URL = "login"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
