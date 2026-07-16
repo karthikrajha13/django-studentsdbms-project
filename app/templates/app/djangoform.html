@@ -1,19 +1,25 @@
 {% extends "app/base.html" %}
 
+{% load crispy_forms_tags %}
+
 {% block content %}
 
-<h1>📝 Django Form</h1>
+<div class="container mt-5">
 
-<form method="POST">
+    <h2 class="mb-4">Student Registration</h2>
 
-    {% csrf_token %}
+    <form method="POST">
 
-    {{ form.as_p }}
+        {% csrf_token %}
 
-    <button type="submit">
-        Submit
-    </button>
+        {{ form|crispy }}
 
-</form>
+        <button class="btn btn-primary">
+            Register Student
+        </button>
+
+    </form>
+
+</div>
 
 {% endblock %}
