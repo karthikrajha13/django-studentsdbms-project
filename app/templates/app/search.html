@@ -1,0 +1,30 @@
+{% extends 'app/base.html' %}
+
+{% block content %}
+
+<h1>🔍 Student Search</h1>
+
+<form method="GET">
+
+    <input
+        type="text"
+        name="course"
+        placeholder="Enter Course">
+
+    <button type="submit">
+        Search
+    </button>
+
+</form>
+
+<hr>
+
+{% if course %}
+
+<h3>You searched for:</h3>
+
+<p>{{ course }}</p>
+
+{% endif %}
+
+{% endblock %}
