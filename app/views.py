@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import StudentSerializer
 from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
 
 def home(request):
     return render(request, "app/index.html")
@@ -252,3 +253,16 @@ def student_detail(request, id):
             {"message": "Student deleted successfully"},
             status=status.HTTP_204_NO_CONTENT
         )
+        
+class StudentAPIView(APIView):
+
+    def get(self, request):
+
+        students = Student.objects.all()
+
+        serializer = StudentSerializer(
+            students,
+            many=True
+        )
+
+        return Response(serializer.data)
