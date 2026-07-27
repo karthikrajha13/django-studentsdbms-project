@@ -89,7 +89,7 @@ StudentHub is a web-based Student Management System developed using **Django**, 
 
 | Screenshot 1 | Screenshot 2 |
 |--------------|--------------|
-| ![](screenshots/EditStudent-1.png) | ![](screenshots/EditStudent-2.png) |
+| ![](screenshots/Edit Student-1.png) | ![](screenshots/Edit Student-2.png) |
 
 ---
 
