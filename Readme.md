@@ -126,7 +126,7 @@ StudentHub is a web-based Student Management System developed using **Django**, 
 ## ⚙️ Installation
 
 ```bash
-git clone https://github.com/karthikrajha13/django-studentsdbms-project.git
+git clone https://github.com/karthikrajha13/studenthub-studentdbms
 
 cd django-studentsdbms-project
 
