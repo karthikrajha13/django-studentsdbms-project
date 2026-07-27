@@ -1,64 +1,46 @@
-from django.shortcuts import render, redirect
-from .models import Student
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
 from django.contrib import messages
-from .forms import StudentForm
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import StudentSerializer
-from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
+
+from .models import Student
+from .forms import StudentForm
+from .serializers import StudentSerializer
+
 
 def home(request):
     return render(request, "app/index.html")
 
-def about(request):
-    return render(request, "app/about.html")
-
-def contact(request):
-    return render(request, "app/contact.html")
-
-@login_required
-def register(request):
-
-    if request.method == "POST":
-
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        age = request.POST.get("age")
-        course = request.POST.get("course")
-
-        student = Student(
-            name=name,
-            email=email,
-            age=age,
-            course=course
-        )
-
-        student.save()
-        messages.success(request, "Student Saved Successfully!")
-        print("Student Saved Successfully!")
-
-    return render(request, "app/register.html")
-
 @login_required
 def search(request):
 
-    course = request.GET.get("course")
+    course = request.GET.get("course", "")
+
+    students = Student.objects.none()
+
+    if course:
+
+        students = Student.objects.filter(
+            course__icontains=course
+        )
 
     return render(
         request,
         "app/search.html",
-        {"course": course}
+        {
+            "course": course,
+            "students": students
+        }
     )
 
-@login_required    
+@login_required
 def students(request):
 
     students = Student.objects.order_by("-id")
@@ -69,10 +51,11 @@ def students(request):
         {"students": students}
     )
 
+
 @login_required
 def edit(request, id):
 
-    student = Student.objects.get(id=id)
+    student = get_object_or_404(Student, id=id)
 
     if request.method == "POST":
 
@@ -83,7 +66,9 @@ def edit(request, id):
 
         student.save()
 
-        return redirect("/students/")
+        messages.success(request, "Student updated successfully!")
+
+        return redirect("students")
 
     return render(
         request,
@@ -92,17 +77,20 @@ def edit(request, id):
             "student": student
         }
     )
-  
-@login_required    
+
+
+@login_required
 def delete(request, id):
 
-    student = Student.objects.get(id=id)
+    student = get_object_or_404(Student, id=id)
 
     if request.method == "POST":
 
         student.delete()
 
-        return redirect("/students/")
+        messages.success(request, "Student deleted successfully!")
+
+        return redirect("students")
 
     return render(
         request,
@@ -111,7 +99,9 @@ def delete(request, id):
             "student": student
         }
     )
-    
+
+
+@login_required
 def python_students(request):
 
     students = Student.objects.filter(course="Python")
@@ -128,15 +118,14 @@ def python_students(request):
 def orm_demo(request):
 
     print("Total Students :", Student.objects.count())
-
     print("Any Students :", Student.objects.exists())
-
     print("First Student :", Student.objects.first())
-
     print("Last Student :", Student.objects.last())
 
     return HttpResponse("Check Terminal")
 
+
+@login_required
 def django_form(request):
 
     if request.method == "POST":
@@ -144,16 +133,26 @@ def django_form(request):
         form = StudentForm(request.POST)
 
         if form.is_valid():
+
             form.save()
-            return redirect("/students/")
+
+            messages.success(request, "Student registered successfully!")
+
+            return redirect("students")
 
     else:
+
         form = StudentForm()
 
-    return render(request, "app/djangoform.html", {
-        "form": form
-    })
-    
+    return render(
+        request,
+        "app/djangoform.html",
+        {
+            "form": form
+        }
+    )
+
+
 def signup(request):
 
     if request.method == "POST":
@@ -180,12 +179,12 @@ def signup(request):
 
     return render(request, "app/signup.html")
 
+
 def login_user(request):
 
     if request.method == "POST":
 
         username = request.POST["username"]
-
         password = request.POST["password"]
 
         user = authenticate(
@@ -200,60 +199,88 @@ def login_user(request):
 
             return redirect("home")
 
-        else:
-
-            messages.error(request, "Invalid Username or Password")
+        messages.error(request, "Invalid Username or Password")
 
     return render(request, "app/login.html")
+
 
 def logout_user(request):
 
     logout(request)
 
+    messages.success(request, "Logged out successfully.")
+
     return redirect("login")
 
 
-@api_view(['GET', 'POST'])
+@api_view(["GET", "POST"])
 def student_api(request):
 
-    if request.method == 'GET':
+    if request.method == "GET":
+
         students = Student.objects.all()
-        serializer = StudentSerializer(students, many=True)
+
+        serializer = StudentSerializer(
+            students,
+            many=True
+        )
+
         return Response(serializer.data)
 
-    elif request.method == 'POST':
-        serializer = StudentSerializer(data=request.data)
+    serializer = StudentSerializer(data=request.data)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+    if serializer.is_valid():
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
 
-@api_view(['GET', 'PUT', 'DELETE'])
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+
+    return Response(
+        serializer.errors,
+        status=status.HTTP_400_BAD_REQUEST
+    )
+
+
+@api_view(["GET", "PUT", "DELETE"])
 def student_detail(request, id):
 
     student = get_object_or_404(Student, id=id)
 
-    if request.method == 'GET':
+    if request.method == "GET":
+
         serializer = StudentSerializer(student)
+
         return Response(serializer.data)
 
-    elif request.method == 'PUT':
-        serializer = StudentSerializer(student, data=request.data)
+    elif request.method == "PUT":
+
+        serializer = StudentSerializer(
+            student,
+            data=request.data
+        )
 
         if serializer.is_valid():
+
             serializer.save()
+
             return Response(serializer.data)
 
-        return Response(serializer.errors, status=400)
-    elif request.method == 'DELETE':
-        student.delete()
         return Response(
-            {"message": "Student deleted successfully"},
-            status=status.HTTP_204_NO_CONTENT
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
         )
-        
+
+    student.delete()
+
+    return Response(
+        {"message": "Student deleted successfully"},
+        status=status.HTTP_204_NO_CONTENT
+    )
+
+
 class StudentAPIView(APIView):
 
     def get(self, request):

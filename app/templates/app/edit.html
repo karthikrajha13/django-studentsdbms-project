@@ -1,27 +1,88 @@
-{% extends 'app/base.html' %}
+{% extends "app/base.html" %} {% block content %}
 
-{% block content %}
+<div class="row justify-content-center py-5">
+  <div class="col-lg-7 col-md-9">
+    <div class="card shadow-lg border-0 rounded-4">
+      <div class="card-body p-5">
+        <div class="text-center mb-4">
+          <i
+            class="bi bi-pencil-square text-warning"
+            style="font-size: 70px"
+          ></i>
 
-<h1>✏ Edit Student</h1>
+          <h2 class="fw-bold mt-3">Edit Student</h2>
 
-<form method="POST">
+          <p class="text-muted">Update the student's information below.</p>
+        </div>
 
-{% csrf_token %}
+        <form method="POST">
+          {% csrf_token %}
 
-<label>Name</label><br>
-<input type="text" name="name" value="{{ student.name }}"><br><br>
+          <div class="mb-3">
+            <label class="form-label fw-semibold"> Name </label>
 
-<label>Email</label><br>
-<input type="email" name="email" value="{{ student.email }}"><br><br>
+            <input
+              type="text"
+              name="name"
+              class="form-control"
+              value="{{ student.name }}"
+              required
+            />
+          </div>
 
-<label>Age</label><br>
-<input type="number" name="age" value="{{ student.age }}"><br><br>
+          <div class="mb-3">
+            <label class="form-label fw-semibold"> Email </label>
 
-<label>Course</label><br>
-<input type="text" name="course" value="{{ student.course }}"><br><br>
+            <input
+              type="email"
+              name="email"
+              class="form-control"
+              value="{{ student.email }}"
+              required
+            />
+          </div>
 
-<button>Update</button>
+          <div class="mb-3">
+            <label class="form-label fw-semibold"> Age </label>
 
-</form>
+            <input
+              type="number"
+              name="age"
+              class="form-control"
+              value="{{ student.age }}"
+              required
+            />
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold"> Course </label>
+
+            <input
+              type="text"
+              name="course"
+              class="form-control"
+              value="{{ student.course }}"
+              required
+            />
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'students' %}" class="btn btn-secondary">
+              <i class="bi bi-arrow-left"></i>
+
+              Back
+            </a>
+
+            <button class="btn btn-warning text-dark">
+              <i class="bi bi-check-circle-fill"></i>
+
+              Update Student
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
